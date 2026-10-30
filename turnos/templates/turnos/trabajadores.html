@@ -13,8 +13,8 @@
         <tr>
           <td>{{ x.t.nombre }}</td>
           <td>
-            {% if not x.t.disponible %}<span class="etiqueta cancelado">No disponible</span>
-            {% elif x.ocupado %}<span class="etiqueta en_proceso">Ocupado</span>
+            {% if not x.t.disponible %}<span class="etiqueta cancelado">No disponible</span>{% if x.ocupado %} <small class="mut">termina {{ x.orden.placa }} y sale de la capacidad</small>{% endif %}
+            {% elif x.ocupado %}<span class="etiqueta en_proceso">Lavando {{ x.orden.placa }} · puesto {{ x.orden.puesto|default:"—" }}</span>
             {% else %}<span class="etiqueta finalizado">Libre</span>{% endif %}
           </td>
           <td class="acciones">
