@@ -1,12 +1,12 @@
 {% extends "turnos/base.html" %}
 {% block titulo %}Panel{% endblock %}
 {% block h1 %}Panel de turnos{% endblock %}
-{% block sub %}Actualizado a las {{ ahora|date:"H:i" }} · la espera se recalcula en cada consulta{% endblock %}
+{% block sub %}Actualizado a las {{ ahora|date:"H:i" }} · la espera se recalcula en cada consulta y la página se actualiza cada 30 segundos{% endblock %}
 {% block acciones %}<a class="boton" href="{% url 'registrar' %}">Registrar moto</a>{% endblock %}
 {% block contenido %}
 <section class="indicadores">
   <div class="tarjeta kpi"><span>En cola</span><strong>{{ cola|length }}</strong><small>motos pendientes</small></div>
-  <div class="tarjeta kpi"><span>En proceso</span><strong>{{ en_proceso|length }}</strong><small>de {{ capacidad }} puestos activos</small></div>
+  <div class="tarjeta kpi"><span>En proceso</span><strong>{{ en_proceso|length }}</strong><small>capacidad {{ capacidad }} ({{ disponibles }} trabajadores · {{ puestos }} puestos)</small></div>
   <div class="tarjeta kpi"><span>Finalizadas hoy</span><strong>{{ finalizadas_hoy }}</strong><small>servicios terminados</small></div>
   <div class="tarjeta kpi"><span>Espera estimada</span><strong>{{ espera_prom }} <em>min</em></strong><small>promedio de la cola (máx. {{ espera_max }})</small></div>
 </section>
@@ -25,11 +25,11 @@
         <div class="fila-sup">
           <span class="placa">{{ p.orden.placa }}</span>
           <span class="etiqueta">{{ p.orden.servicio.nombre }}</span>
-          <span class="mut">{{ p.orden.trabajador.nombre }}</span>
+          <span class="mut">Puesto {{ p.orden.puesto|default:"—" }} · {{ p.orden.trabajador.nombre|default:"—" }}</span>
         </div>
         <div class="barra"><div class="barra-llena {% if p.retraso %}retraso{% endif %}" style="width: {{ p.avance }}%"></div></div>
         <div class="fila-inf">
-          {% if p.retraso %}<span class="alerta-txt">Retrasada {{ p.retraso }} min</span>{% else %}<span class="mut">Faltan ≈ {{ p.restante }} min</span>{% endif %}
+          {% if p.retraso %}<span class="alerta-txt">Retrasada {{ p.retraso }} min · se asumen {{ margen }} min más</span>{% else %}<span class="mut">Faltan ≈ {{ p.restante }} min · fin {{ p.fin_estimado|date:"H:i" }}</span>{% endif %}
           <form method="post" action="{% url 'accion_orden' p.orden.pk 'finalizar' %}">{% csrf_token %}<button class="boton chico verde">Finalizar</button></form>
         </div>
       </li>
@@ -40,6 +40,7 @@
 
   <div class="tarjeta">
     <h2>Cola de espera</h2>
+    {% if bloqueo and cola and capacidad %}<p class="aviso">{{ bloqueo }}</p>{% endif %}
     {% if cola %}
     <div class="tabla-scroll">
     <table class="tabla">
@@ -54,9 +55,9 @@
           <td>{% if f.espera_min is not None %}{% if f.espera_min == 0 %}<span class="etiqueta verde-et">Ahora</span>{% else %}{{ f.espera_min }} min{% endif %}{% else %}—{% endif %}</td>
           <td class="acciones">
             <form method="post" action="{% url 'accion_orden' f.orden.pk 'iniciar' %}">{% csrf_token %}
-              <button class="boton chico" {% if not f.puede_iniciar %}disabled title="Se atiende en orden de llegada y con un puesto libre"{% endif %}>Iniciar</button>
+              <button class="boton chico" {% if not f.puede_iniciar %}disabled title="{% if f.posicion == 1 and bloqueo %}{{ bloqueo }}{% else %}Se atiende en orden de llegada{% endif %}"{% endif %}>Iniciar</button>
             </form>
-            <form method="post" action="{% url 'accion_orden' f.orden.pk 'cancelar' %}">{% csrf_token %}<button class="boton chico gris">Cancelar</button></form>
+            <form method="post" action="{% url 'accion_orden' f.orden.pk 'cancelar' %}" onsubmit="return confirm('¿Cancelar el turno de la moto {{ f.orden.placa }}?');">{% csrf_token %}<button class="boton chico gris">Cancelar</button></form>
           </td>
         </tr>
       {% endfor %}
