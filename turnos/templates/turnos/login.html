@@ -1,0 +1,21 @@
+{% load static %}<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ingreso · MotoTurno</title>
+  <link rel="stylesheet" href="{% static 'turnos/estilos.css' %}">
+</head>
+<body class="fondo-login">
+  <div class="login">
+    <div class="marca marca-grande"><span class="marca-logo">MT</span><div><strong>MotoTurno</strong><small>Gestión de turnos y tiempos de atención</small></div></div>
+    <form method="post" class="formulario">
+      {% csrf_token %}
+      {% if form.errors %}<div class="mensaje error">Usuario o contraseña incorrectos.</div>{% endif %}
+      <label>Usuario {{ form.username }}</label>
+      <label>Contraseña {{ form.password }}</label>
+      <button class="boton" type="submit">Ingresar</button>
+    </form>
+    <p class="ayuda centro"><a href="{% url 'consulta' %}">Consultar mi turno (clientes)</a></p>
+  </div>
+</body>
+</html>

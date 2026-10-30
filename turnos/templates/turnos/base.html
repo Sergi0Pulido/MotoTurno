@@ -1,0 +1,46 @@
+{% load static %}<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}MotoTurno{% endblock %} · MotoTurno</title>
+  <link rel="stylesheet" href="{% static 'turnos/estilos.css' %}">
+  {% if refresco %}<meta http-equiv="refresh" content="60">{% endif %}
+</head>
+<body>
+<div class="app">
+  <aside class="lateral">
+    <div class="marca"><span class="marca-logo">MT</span><div><strong>MotoTurno</strong><small>Gestión de turnos</small></div></div>
+    <nav class="menu">
+      <a href="{% url 'panel' %}" class="{% if request.resolver_match.url_name == 'panel' %}activo{% endif %}">Panel de turnos</a>
+      <a href="{% url 'registrar' %}" class="{% if request.resolver_match.url_name == 'registrar' %}activo{% endif %}">Registrar moto</a>
+      <a href="{% url 'seguimiento' %}" class="{% if request.resolver_match.url_name == 'seguimiento' %}activo{% endif %}">Seguimiento</a>
+      <a href="{% url 'servicios' %}" class="{% if 'servicio' in request.resolver_match.url_name %}activo{% endif %}">Servicios</a>
+      <a href="{% url 'trabajadores' %}" class="{% if request.resolver_match.url_name == 'trabajadores' %}activo{% endif %}">Trabajadores</a>
+      <a href="{% url 'reportes' %}" class="{% if request.resolver_match.url_name == 'reportes' %}activo{% endif %}">Reportes</a>
+      <a href="{% url 'configuracion' %}" class="{% if request.resolver_match.url_name == 'configuracion' %}activo{% endif %}">Configuración</a>
+      <a href="{% url 'consulta' %}" class="externo">Vista del cliente</a>
+    </nav>
+    <div class="usuario">
+      <span>{{ request.user.username }}</span>
+      <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="enlace" type="submit">Salir</button></form>
+    </div>
+  </aside>
+  <main class="contenido">
+    <header class="cabecera">
+      <div>
+        <h1>{% block h1 %}{% endblock %}</h1>
+        <p class="sub">{% block sub %}{% endblock %}</p>
+      </div>
+      <div class="cabecera-acciones">{% block acciones %}{% endblock %}</div>
+    </header>
+    {% if messages %}
+    <div class="mensajes">
+      {% for m in messages %}<div class="mensaje {{ m.tags }}" role="alert">{{ m }}</div>{% endfor %}
+    </div>
+    {% endif %}
+    {% block contenido %}{% endblock %}
+  </main>
+</div>
+</body>
+</html>

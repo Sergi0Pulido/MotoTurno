@@ -1,0 +1,27 @@
+{% extends "turnos/base.html" %}
+{% block titulo %}Turno {{ orden.numero_turno }}{% endblock %}
+{% block h1 %}Turno asignado{% endblock %}
+{% block sub %}Entregue esta información al cliente.{% endblock %}
+{% block acciones %}<a class="boton" href="{% url 'registrar' %}">Registrar otra moto</a>{% endblock %}
+{% block contenido %}
+<div class="tarjeta ticket">
+  <div class="ticket-num"><span>Turno</span><strong>{{ orden.numero_turno }}</strong></div>
+  <div class="ticket-datos">
+    <p><span class="placa grande">{{ orden.placa }}</span> <span class="etiqueta {{ orden.estado|lower }}">{{ orden.get_estado_display }}</span></p>
+    <dl class="datos">
+      <dt>Servicio</dt><dd>{{ orden.servicio.nombre }} · {{ orden.servicio.duracion_min }} min · ${{ orden.servicio.precio|floatformat:"0g" }}</dd>
+      <dt>Ingreso</dt><dd>{{ orden.hora_ingreso|date:"H:i" }}</dd>
+      {% if fila %}
+        <dt>Posición en cola</dt><dd>{{ fila.posicion }}</dd>
+        {% if fila.espera_min is not None %}
+        <dt>Espera estimada</dt><dd><strong>{{ fila.espera_min }} min</strong></dd>
+        <dt>Inicio estimado</dt><dd>{{ fila.inicio_estimado|date:"H:i" }}</dd>
+        <dt>Entrega estimada</dt><dd>{{ fila.fin_estimado|date:"H:i" }}</dd>
+        {% else %}
+        <dt>Espera estimada</dt><dd>No disponible (sin trabajadores disponibles)</dd>
+        {% endif %}
+      {% endif %}
+    </dl>
+  </div>
+</div>
+{% endblock %}

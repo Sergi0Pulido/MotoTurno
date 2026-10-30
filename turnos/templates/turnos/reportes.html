@@ -1,0 +1,37 @@
+{% extends "turnos/base.html" %}
+{% block titulo %}Reportes{% endblock %}
+{% block h1 %}Reportes e indicadores{% endblock %}
+{% block sub %}Comparan la espera real con la línea base y comprueban la precisión de las estimaciones.{% endblock %}
+{% block contenido %}
+<section class="indicadores">
+  <div class="tarjeta kpi"><span>Espera real promedio</span><strong>{% if espera_prom is not None %}{{ espera_prom }} <em>min</em>{% else %}—{% endif %}</strong><small>servicios finalizados</small></div>
+  <div class="tarjeta kpi"><span>Línea base</span><strong>{% if config.linea_base_espera_min %}{{ config.linea_base_espera_min }} <em>min</em>{% else %}—{% endif %}</strong><small>medida antes del sistema</small></div>
+  <div class="tarjeta kpi destacado"><span>Reducción de la espera</span><strong>{% if reduccion is not None %}{{ reduccion }} <em>%</em>{% else %}—{% endif %}</strong><small>frente a la línea base</small></div>
+  <div class="tarjeta kpi"><span>Precisión de la estimación</span><strong>{% if pct_precision is not None %}{{ pct_precision }} <em>%</em>{% else %}—{% endif %}</strong><small>dentro de ±{{ config.tolerancia_min }} min · error medio {{ error_prom|default:"—" }} min</small></div>
+</section>
+
+<section class="dos-col">
+  <div class="tarjeta">
+    <h2>Duración real por servicio</h2>
+    <table class="tabla">
+      <thead><tr><th>Servicio</th><th>Estimada</th><th>Real (prom.)</th><th>Atendidas</th></tr></thead>
+      <tbody>
+      {% for r in por_servicio %}
+        <tr><td>{{ r.servicio.nombre }}</td><td>{{ r.servicio.duracion_min }} min</td><td>{% if r.duracion_real is not None %}{{ r.duracion_real }} min{% else %}—{% endif %}</td><td>{{ r.atendidas }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="ayuda">Si la duración real se aleja de la estimada, ajuste el servicio en el catálogo para mejorar la precisión.</p>
+  </div>
+  <div class="tarjeta">
+    <h2>Servicios por trabajador</h2>
+    <table class="tabla">
+      <thead><tr><th>Trabajador</th><th>Finalizados</th></tr></thead>
+      <tbody>{% for t in por_trabajador %}<tr><td>{{ t.nombre }}</td><td>{{ t.n }}</td></tr>{% endfor %}</tbody>
+    </table>
+    <h2 class="espacio">Estado de las motos</h2>
+    <ul class="estados">{% for nombre, n in conteo_estados.items %}<li><span>{{ nombre }}</span><strong>{{ n }}</strong></li>{% endfor %}</ul>
+    <p class="ayuda">Ingresos de los servicios finalizados: <strong>${{ ingresos|floatformat:"0g" }}</strong></p>
+  </div>
+</section>
+{% endblock %}

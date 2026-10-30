@@ -1,0 +1,42 @@
+{% load static %}<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Consulta de turno · MotoTurno</title>
+  <link rel="stylesheet" href="{% static 'turnos/estilos.css' %}">
+</head>
+<body class="fondo-login">
+  <div class="login ancho-consulta">
+    <div class="marca marca-grande"><span class="marca-logo">MT</span><div><strong>Consulte su turno</strong><small>Escriba la placa de su moto</small></div></div>
+    <form method="get" class="formulario">
+      <label>Placa {{ form.placa }}</label>
+      <button class="boton" type="submit">Consultar</button>
+    </form>
+    {% if resultado %}
+      {% with o=resultado.orden f=resultado.fila %}
+      <div class="resultado">
+        <p><span class="placa grande">{{ o.placa }}</span> <span class="etiqueta {{ o.estado|lower }}">{{ o.get_estado_display }}</span></p>
+        <p class="mut">{{ o.servicio.nombre }} · ingreso {{ o.hora_ingreso|date:"H:i" }}</p>
+        {% if o.estado == 'PENDIENTE' and f %}
+          <p>Turno <strong>{{ o.numero_turno }}</strong> · posición <strong>{{ f.posicion }}</strong> en la cola</p>
+          {% if f.espera_min is not None %}
+          <p class="grande-txt">Espera aproximada: <strong>{% if f.espera_min == 0 %}su moto es la siguiente{% else %}{{ f.espera_min }} min{% endif %}</strong></p>
+          <p class="mut">Inicio estimado {{ f.inicio_estimado|date:"H:i" }} · entrega estimada {{ f.fin_estimado|date:"H:i" }}</p>
+          {% endif %}
+        {% elif o.estado == 'EN_PROCESO' %}
+          <p class="grande-txt">Su moto se está lavando ahora.</p>
+          <p class="mut">Entrega estimada {{ o.fin_programado|date:"H:i" }}</p>
+        {% elif o.estado == 'FINALIZADO' %}
+          <p class="grande-txt">Su moto ya está lista.</p>
+        {% else %}
+          <p class="mut">Este servicio fue cancelado.</p>
+        {% endif %}
+      </div>
+      {% endwith %}
+    {% elif buscado %}
+      <div class="mensaje warning">No encontramos una moto con esa placa. Verifique el dato o consulte en el mostrador.</div>
+    {% endif %}
+    <p class="ayuda centro"><a href="{% url 'login' %}">Acceso del personal</a></p>
+  </div>
+</body>
+</html>

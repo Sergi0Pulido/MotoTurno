@@ -1,0 +1,27 @@
+{% extends "turnos/base.html" %}
+{% comment %}Plantilla genérica de formulario: la usan la edición de servicios y la configuración.{% endcomment %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block h1 %}{{ titulo }}{% endblock %}
+{% block sub %}{{ sub }}{% endblock %}
+{% block contenido %}
+<div class="tarjeta formulario-ancho">
+  <form method="post" class="formulario" novalidate>
+    {% csrf_token %}
+    {% for campo in form %}
+    <div class="campo {% if campo.errors %}con-error{% endif %}">
+      {% if campo.field.widget.input_type == 'checkbox' %}
+        <label class="check">{{ campo }} {{ campo.label }}</label>
+      {% else %}
+        <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>{{ campo }}
+      {% endif %}
+      {% for e in campo.errors %}<span class="error-txt">{{ e }}</span>{% endfor %}
+      {% if campo.help_text %}<small class="ayuda">{{ campo.help_text }}</small>{% endif %}
+    </div>
+    {% endfor %}
+    <div class="acciones-form">
+      <button class="boton" type="submit">{{ boton }}</button>
+      {% if volver %}<a class="boton gris" href="{% url volver %}">Volver</a>{% endif %}
+    </div>
+  </form>
+</div>
+{% endblock %}

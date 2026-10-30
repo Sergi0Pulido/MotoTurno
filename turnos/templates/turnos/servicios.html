@@ -1,0 +1,38 @@
+{% extends "turnos/base.html" %}
+{% block titulo %}Servicios{% endblock %}
+{% block h1 %}Servicios de lavado{% endblock %}
+{% block sub %}Tipos de lavado con su precio y su duración estimada, que alimenta el cálculo de la espera.{% endblock %}
+{% block contenido %}
+<section class="dos-col asimetrico">
+  <div class="tarjeta">
+    <h2>Catálogo</h2>
+    <div class="tabla-scroll">
+    <table class="tabla">
+      <thead><tr><th>Servicio</th><th>Duración</th><th>Precio</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+      {% for s in lista %}
+        <tr>
+          <td>{{ s.nombre }}</td><td>{{ s.duracion_min }} min</td><td>${{ s.precio|floatformat:"0g" }}</td>
+          <td><span class="etiqueta {% if s.activo %}finalizado{% else %}cancelado{% endif %}">{% if s.activo %}Activo{% else %}Inactivo{% endif %}</span></td>
+          <td class="acciones"><a class="boton chico gris" href="{% url 'servicio_editar' s.pk %}">Editar</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+  <div class="tarjeta">
+    <h2>Nuevo servicio</h2>
+    <form method="post" class="formulario" novalidate>
+      {% csrf_token %}
+      {% for campo in form %}
+      <div class="campo {% if campo.errors %}con-error{% endif %}">
+        {% if campo.field.widget.input_type == 'checkbox' %}<label class="check">{{ campo }} {{ campo.label }}</label>{% else %}<label for="{{ campo.id_for_label }}">{{ campo.label }}</label>{{ campo }}{% endif %}
+        {% for e in campo.errors %}<span class="error-txt">{{ e }}</span>{% endfor %}
+      </div>
+      {% endfor %}
+      <button class="boton" type="submit">Guardar servicio</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

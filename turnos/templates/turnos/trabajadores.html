@@ -1,0 +1,44 @@
+{% extends "turnos/base.html" %}
+{% block titulo %}Trabajadores{% endblock %}
+{% block h1 %}Trabajadores{% endblock %}
+{% block sub %}Capacidad actual: {{ capacidad }} motos a la vez (el menor valor entre trabajadores disponibles y {{ puestos }} puestos de lavado).{% endblock %}
+{% block contenido %}
+<section class="dos-col asimetrico">
+  <div class="tarjeta">
+    <h2>Disponibilidad de la jornada</h2>
+    <table class="tabla">
+      <thead><tr><th>Trabajador</th><th>Situación</th><th></th></tr></thead>
+      <tbody>
+      {% for x in lista %}
+        <tr>
+          <td>{{ x.t.nombre }}</td>
+          <td>
+            {% if not x.t.disponible %}<span class="etiqueta cancelado">No disponible</span>
+            {% elif x.ocupado %}<span class="etiqueta en_proceso">Ocupado</span>
+            {% else %}<span class="etiqueta finalizado">Libre</span>{% endif %}
+          </td>
+          <td class="acciones">
+            <form method="post" action="{% url 'trabajador_alternar' x.t.pk %}">{% csrf_token %}
+              <button class="boton chico gris">{% if x.t.disponible %}Marcar no disponible{% else %}Marcar disponible{% endif %}</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="tarjeta">
+    <h2>Nuevo trabajador</h2>
+    <form method="post" class="formulario" novalidate>
+      {% csrf_token %}
+      {% for campo in form %}
+      <div class="campo {% if campo.errors %}con-error{% endif %}">
+        {% if campo.field.widget.input_type == 'checkbox' %}<label class="check">{{ campo }} {{ campo.label }}</label>{% else %}<label for="{{ campo.id_for_label }}">{{ campo.label }}</label>{{ campo }}{% endif %}
+        {% for e in campo.errors %}<span class="error-txt">{{ e }}</span>{% endfor %}
+      </div>
+      {% endfor %}
+      <button class="boton" type="submit">Agregar</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

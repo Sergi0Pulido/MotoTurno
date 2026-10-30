@@ -1,0 +1,30 @@
+{% extends "turnos/base.html" %}
+{% block titulo %}Registrar moto{% endblock %}
+{% block h1 %}Registrar moto{% endblock %}
+{% block sub %}Ingrese la placa y el servicio. La hora de ingreso se guarda automáticamente.{% endblock %}
+{% block contenido %}
+<div class="tarjeta formulario-ancho">
+  <form method="post" class="formulario" novalidate>
+    {% csrf_token %}
+    <div class="campo {% if form.placa.errors %}con-error{% endif %}">
+      <label for="{{ form.placa.id_for_label }}">Placa <span class="req">*</span></label>
+      {{ form.placa }}
+      {% if form.placa.errors %}<span class="error-txt">{{ form.placa.errors.0 }}</span>{% endif %}
+      <small class="ayuda">Formato ABC12D</small>
+    </div>
+    <div class="campo {% if form.servicio.errors %}con-error{% endif %}">
+      <label for="{{ form.servicio.id_for_label }}">Servicio <span class="req">*</span></label>
+      {{ form.servicio }}
+      {% for e in form.servicio.errors %}<span class="error-txt">{{ e }}</span>{% endfor %}
+    </div>
+    <div class="fila-dos">
+      <div class="campo"><label for="{{ form.cliente.id_for_label }}">Cliente</label>{{ form.cliente }}</div>
+      <div class="campo"><label for="{{ form.telefono.id_for_label }}">Teléfono</label>{{ form.telefono }}</div>
+    </div>
+    <div class="acciones-form">
+      <button class="boton" type="submit">Registrar y asignar turno</button>
+      <a class="boton gris" href="{% url 'panel' %}">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
