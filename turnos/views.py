@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -33,9 +34,11 @@ def panel(request):
     ctx = {
         "cola": cola,
         "en_proceso": en_proceso,
-        "capacidad": min(disponibles, config.puestos_lavado),
+        "capacidad": services.capacidad(config),
         "disponibles": disponibles,
         "puestos": config.puestos_lavado,
+        "bloqueo": services.motivo_bloqueo(config),
+        "margen": config.margen_retraso_min,
         "finalizadas_hoy": Orden.objects.filter(estado=Orden.Estado.FINALIZADO, fin_real__date=hoy).count(),
         "espera_prom": round(sum(esperas) / len(esperas)) if esperas else 0,
         "espera_max": max(esperas) if esperas else 0,
@@ -84,7 +87,11 @@ def accion_orden(request, pk, accion):
             messages.success(request, f"Turno {orden.numero_turno} ({orden.placa}): {orden.get_estado_display().lower()}.")
         except ValidationError as exc:
             _errores(request, exc)
-    return redirect(request.POST.get("next") or "panel")
+    destino = request.POST.get("next", "")
+    if destino and url_has_allowed_host_and_scheme(destino, allowed_hosts={request.get_host()},
+                                                   require_https=request.is_secure()):
+        return redirect(destino)
+    return redirect("panel")
 
 
 @login_required
@@ -118,12 +125,11 @@ def trabajadores(request):
         form.save()
         messages.success(request, "Trabajador agregado.")
         return redirect("trabajadores")
-    ocupados = set(Orden.objects.filter(estado=Orden.Estado.EN_PROCESO).values_list("trabajador_id", flat=True))
-    lista = [{"t": t, "ocupado": t.id in ocupados} for t in Trabajador.objects.all()]
+    en_proceso = {o.trabajador_id: o for o in Orden.objects.filter(estado=Orden.Estado.EN_PROCESO)}
+    lista = [{"t": t, "ocupado": t.id in en_proceso, "orden": en_proceso.get(t.id)} for t in Trabajador.objects.all()]
     config = Configuracion.actual()
-    disp = sum(1 for x in lista if x["t"].disponible)
     return render(request, "turnos/trabajadores.html", {
-        "form": form, "lista": lista, "capacidad": min(disp, config.puestos_lavado), "puestos": config.puestos_lavado,
+        "form": form, "lista": lista, "capacidad": services.capacidad(config), "puestos": config.puestos_lavado,
     })
 
 

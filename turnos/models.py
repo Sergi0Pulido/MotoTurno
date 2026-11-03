@@ -7,8 +7,10 @@ from django.db import models
 from django.utils import timezone
 
 # Placa de moto en Colombia: tres letras, dos dígitos y una letra (ABC12D);
-# también se admite el formato anterior de tres letras y tres dígitos.
-PLACA_RE = re.compile(r"^[A-Z]{3}\d{2}[A-Z0-9]$")
+# también se admite el formato antiguo de motos: tres letras y dos dígitos (ABC12).
+# No se aceptan placas de carro (ABC123).
+PLACA_RE = re.compile(r"^[A-Z]{3}\d{2}[A-Z]?$")
+MENSAJE_PLACA = "La placa no es válida. Use el formato ABC12D (o ABC12 para placas antiguas)."
 
 
 def normalizar_placa(valor):
@@ -25,8 +27,12 @@ class Configuracion(models.Model):
         help_text="Número máximo de motos que se pueden lavar al mismo tiempo.",
     )
     tolerancia_min = models.PositiveSmallIntegerField(
-        "Tolerancia de la estimación (min)", default=5,
-        help_text="Diferencia aceptable entre la espera estimada y la real.",
+        "Tolerancia de la estimación (min)", default=10, validators=[MinValueValidator(1)],
+        help_text="Diferencia aceptable entre la espera estimada y la real (criterio de aceptación: ±10 min).",
+    )
+    margen_retraso_min = models.PositiveSmallIntegerField(
+        "Margen por retraso (min)", default=5, validators=[MinValueValidator(1)],
+        help_text="Minutos que se asumen faltantes cuando un servicio supera su duración estimada (regla R6).",
     )
     linea_base_espera_min = models.PositiveSmallIntegerField(
         "Línea base de espera (min)", null=True, blank=True,
@@ -86,6 +92,7 @@ class Orden(models.Model):
     hora_ingreso = models.DateTimeField(default=timezone.now)
     estado = models.CharField(max_length=12, choices=Estado.choices, default=Estado.PENDIENTE)
     trabajador = models.ForeignKey(Trabajador, null=True, blank=True, on_delete=models.SET_NULL, related_name="ordenes")
+    puesto = models.PositiveSmallIntegerField("Puesto de lavado", null=True, blank=True)
     inicio_real = models.DateTimeField(null=True, blank=True)
     fin_real = models.DateTimeField(null=True, blank=True)
     espera_estimada_min = models.PositiveSmallIntegerField(
@@ -101,7 +108,7 @@ class Orden(models.Model):
     def clean(self):
         self.placa = normalizar_placa(self.placa)
         if not PLACA_RE.match(self.placa):
-            raise ValidationError({"placa": "La placa debe tener el formato ABC12D (3 letras, 2 números y 1 letra o número)."})
+            raise ValidationError({"placa": MENSAJE_PLACA})
 
     def save(self, *args, **kwargs):
         if not self.numero_turno:

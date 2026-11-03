@@ -15,7 +15,7 @@
   </form>
   <div class="tabla-scroll">
   <table class="tabla">
-    <thead><tr><th>Turno</th><th>Placa</th><th>Servicio</th><th>Ingreso</th><th>Estado</th><th>Trabajador</th><th>Espera est.</th><th>Espera real</th><th>Duración real</th></tr></thead>
+    <thead><tr><th>Turno</th><th>Placa</th><th>Servicio</th><th>Ingreso</th><th>Estado</th><th>Puesto</th><th>Trabajador</th><th>Espera est.</th><th>Espera real</th><th>Duración real</th></tr></thead>
     <tbody>
     {% for o in pagina %}
       <tr>
@@ -24,13 +24,14 @@
         <td>{{ o.servicio.nombre }}</td>
         <td>{{ o.hora_ingreso|date:"d/m H:i" }}</td>
         <td><span class="etiqueta {{ o.estado|lower }}">{{ o.get_estado_display }}</span></td>
+        <td>{{ o.puesto|default:"—" }}</td>
         <td>{{ o.trabajador.nombre|default:"—" }}</td>
         <td>{% if o.espera_estimada_min is not None %}{{ o.espera_estimada_min }} min{% else %}—{% endif %}</td>
         <td>{% if o.espera_real_min is not None %}{{ o.espera_real_min }} min{% else %}—{% endif %}</td>
         <td>{% if o.duracion_real_min is not None %}{{ o.duracion_real_min }} min{% else %}—{% endif %}</td>
       </tr>
     {% empty %}
-      <tr><td colspan="9" class="vacio">No hay registros con esos filtros.</td></tr>
+      <tr><td colspan="10" class="vacio">No hay registros con esos filtros.</td></tr>
     {% endfor %}
     </tbody>
   </table>

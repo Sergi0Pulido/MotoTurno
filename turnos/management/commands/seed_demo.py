@@ -27,7 +27,8 @@ class Command(BaseCommand):
         cfg = Configuracion.actual()
         cfg.nombre_establecimiento = "Lavadero de motos (demo)"
         cfg.puestos_lavado = 3
-        cfg.tolerancia_min = 5
+        cfg.tolerancia_min = 10
+        cfg.margen_retraso_min = 5
         cfg.linea_base_espera_min = 20
         cfg.save()
 
@@ -66,13 +67,13 @@ class Command(BaseCommand):
                 espera_estimada_min=est, cliente="",
             )
 
-        # Dos en proceso y varias pendientes
-        ya = [("QWE12H", "Lavado completo", "Carlos", 18), ("RTY34J", "Lavado y brillado", "Luis", 12)]
-        for placa, srv, trab, hace in ya:
+        # Dos en proceso (una ya retrasada) y varias pendientes
+        ya = [("QWE12H", "Lavado completo", "Carlos", 34, 1), ("RTY34J", "Lavado y brillado", "Luis", 12, 2)]
+        for placa, srv, trab, hace, puesto in ya:
             ingreso = ahora - timedelta(minutes=hace + 4)
             Orden.objects.create(
                 placa=placa, servicio=S[srv], hora_ingreso=ingreso, estado=Orden.Estado.EN_PROCESO,
-                trabajador=T[trab], inicio_real=ahora - timedelta(minutes=hace), espera_estimada_min=4,
+                trabajador=T[trab], puesto=puesto, inicio_real=ahora - timedelta(minutes=hace), espera_estimada_min=4,
             )
         cola = [("UIO56K", "Lavado básico", 4, "Camila R."), ("PAS78L", "Lavado completo", 3, ""),
                 ("FGH90M", "Desengrase de cadena", 2, "Julián P."), ("JKL23N", "Lavado y brillado", 1, ""),

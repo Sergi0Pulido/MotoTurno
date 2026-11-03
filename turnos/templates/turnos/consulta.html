@@ -24,7 +24,7 @@
           <p class="mut">Inicio estimado {{ f.inicio_estimado|date:"H:i" }} · entrega estimada {{ f.fin_estimado|date:"H:i" }}</p>
           {% endif %}
         {% elif o.estado == 'EN_PROCESO' %}
-          <p class="grande-txt">Su moto se está lavando ahora.</p>
+          <p class="grande-txt">Su moto se está lavando ahora{% if o.puesto %} en el puesto {{ o.puesto }}{% endif %}.</p>
           <p class="mut">Entrega estimada {{ o.fin_programado|date:"H:i" }}</p>
         {% elif o.estado == 'FINALIZADO' %}
           <p class="grande-txt">Su moto ya está lista.</p>

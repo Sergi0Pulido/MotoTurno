@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import PLACA_RE, Configuracion, Orden, Servicio, Trabajador, normalizar_placa
+from .models import MENSAJE_PLACA, PLACA_RE, Configuracion, Orden, Servicio, Trabajador, normalizar_placa
 
 
 class OrdenForm(forms.ModelForm):
@@ -12,7 +12,7 @@ class OrdenForm(forms.ModelForm):
     def clean_placa(self):
         placa = normalizar_placa(self.cleaned_data["placa"])
         if not PLACA_RE.match(placa):
-            raise forms.ValidationError("La placa debe tener el formato ABC12D (3 letras, 2 números y 1 letra o número).")
+            raise forms.ValidationError(MENSAJE_PLACA)
         return placa
 
     class Meta:
@@ -45,7 +45,7 @@ class TrabajadorForm(forms.ModelForm):
 class ConfiguracionForm(forms.ModelForm):
     class Meta:
         model = Configuracion
-        fields = ["nombre_establecimiento", "puestos_lavado", "tolerancia_min", "linea_base_espera_min"]
+        fields = ["nombre_establecimiento", "puestos_lavado", "margen_retraso_min", "tolerancia_min", "linea_base_espera_min"]
 
 
 class ConsultaForm(forms.Form):

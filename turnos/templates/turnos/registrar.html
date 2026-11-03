@@ -10,7 +10,7 @@
       <label for="{{ form.placa.id_for_label }}">Placa <span class="req">*</span></label>
       {{ form.placa }}
       {% if form.placa.errors %}<span class="error-txt">{{ form.placa.errors.0 }}</span>{% endif %}
-      <small class="ayuda">Formato ABC12D</small>
+      <small class="ayuda">Formato ABC12D (o ABC12 en placas antiguas)</small>
     </div>
     <div class="campo {% if form.servicio.errors %}con-error{% endif %}">
       <label for="{{ form.servicio.id_for_label }}">Servicio <span class="req">*</span></label>
